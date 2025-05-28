@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { Request, Response } from 'express'
 import { firstValueFrom } from 'rxjs'
-import { CreatePlayerDto } from 'src/players/dto/create-player.dto'
+import { CreatePlayerDto } from 'src/players/dto/player.dto'
 import { PlayerService } from 'src/players/player.service'
 import { TokensService } from './token.service'
 

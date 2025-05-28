@@ -10,7 +10,7 @@ import {
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { Request, Response } from 'express'
 import { ValidationPipe } from 'src/pipes/validation.pipe'
-import { CreatePlayerDto } from 'src/players/dto/create-player.dto'
+import { CreatePlayerDto } from 'src/players/dto/player.dto'
 import { AuthService } from './auth.service'
 import { JwtAuthGuard } from './jwt-auth.guard'
 

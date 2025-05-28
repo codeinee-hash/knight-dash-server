@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsString, Length } from 'class-validator'
+import { IsMongoId, IsNumber, IsString, Length } from 'class-validator'
 
 export class CreatePlayerDto {
 	@ApiProperty({ example: 'RenamedUser', description: 'Nick name' })
@@ -12,4 +12,14 @@ export class CreatePlayerDto {
 		message: 'Не меньше и не больше 13 символов (+996XXXXXXXXX)',
 	})
 	readonly telephone: string
+}
+
+export class UpdateScoreDto {
+	@ApiProperty({ example: '6650b0c8123abc...', description: 'ID игрока' })
+	@IsMongoId()
+	readonly id: string
+
+	@ApiProperty({ example: 2200, description: 'Очки игрока' })
+	@IsNumber()
+	readonly score: number
 }
