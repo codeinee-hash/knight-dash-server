@@ -47,13 +47,8 @@ export class ScoreController {
 	@ApiOperation({ summary: 'Get top players by mode' })
 	@ApiResponse({ status: 200, description: 'Top players' })
 	@Get('/score/top-players')
-	async getTopPlayers(@Query('mode') mode: string) {
-		const numericMode = Number(mode)
-		if (![15, 30, 60].includes(numericMode)) {
-			throw new BadRequestException('Некорректный режим игры')
-		}
-
-		const data = await this.playerService.getTopPlayers(numericMode)
+	async getTopPlayers() {
+		const data = await this.playerService.getTopPlayers()
 
 		return {
 			status: 'success',

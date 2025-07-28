@@ -66,23 +66,9 @@ export class PlayerService {
 		}))
 	}
 
-	async getTopPlayers(mode: number) {
-		if (![15, 30, 60].includes(mode)) {
-			throw new Error('Некорректный режим игры')
-		}
+	async getTopPlayers() {
+		const topPlayers = await this.palyerModel.find()
 
-		const scoreField = `score${mode}` as 'score15' | 'score30' | 'score60'
-		const topPlayers = await this.palyerModel
-			.find()
-			.sort({ [scoreField]: -1 })
-			.limit(10)
-			.select(`login telephone ${scoreField}`)
-			.lean()
-
-		return topPlayers.map(p => ({
-			login: p.login,
-			telephone: p.telephone,
-			score: p[scoreField],
-		}))
+		return topPlayers
 	}
 }
