@@ -1,7 +1,6 @@
 import { HttpService } from '@nestjs/axios'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { Request, Response } from 'express'
-import { firstValueFrom } from 'rxjs'
 import { CreatePlayerDto } from 'src/players/dto/player.dto'
 import { PlayerService } from 'src/players/player.service'
 import { TokensService } from './token.service'
@@ -17,7 +16,7 @@ export class AuthService {
 	async login(playerDto: CreatePlayerDto, res: Response) {
 		const player = await this.validatePlayer(playerDto)
 		const tokens = this.tokensService.generateTokens({
-			id: player.id,
+			_id: player.id,
 			login: player.login,
 			telephone: player.telephone,
 		})
@@ -45,36 +44,36 @@ export class AuthService {
 		const player = await this.playerService.createPlayer(playerDto)
 
 		const tokens = this.tokensService.generateTokens({
-			id: player.player.id,
+			_id: player.player.id,
 			login: player.player.login,
 			telephone: player.player.telephone,
 		})
 
 		this.tokensService.setRefreshTokenCookie(res, tokens.refreshToken)
 
-		const bitrixRes$ = this.httpService.post(
-			`${process.env.BITRIX_URL}`,
-			new URLSearchParams({
-				'fields[SOURCE_ID]': '127',
-				'fields[NAME]': playerDto.login,
-				'fields[TITLE]': 'GEEKS GAME: Хакатон 2025',
-				'fields[PHONE][0][VALUE]': playerDto.telephone,
-				'fields[PHONE][0][VALUE_TYPE]': 'WORK',
-			}),
-			{
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-			}
-		)
+		// const bitrixRes$ = this.httpService.post(
+		// 	`${process.env.BITRIX_URL}`,
+		// 	new URLSearchParams({
+		// 		'fields[SOURCE_ID]': '127',
+		// 		'fields[NAME]': playerDto.login,
+		// 		'fields[TITLE]': 'GEEKS GAME: Хакатон 2025',
+		// 		'fields[PHONE][0][VALUE]': playerDto.telephone,
+		// 		'fields[PHONE][0][VALUE_TYPE]': 'WORK',
+		// 	}),
+		// 	{
+		// 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+		// 	}
+		// )
 
-		const bitrixResponse = await firstValueFrom(bitrixRes$)
-		const bitrixData = bitrixResponse.data
+		// const bitrixResponse = await firstValueFrom(bitrixRes$)
+		// const bitrixData = bitrixResponse.data
 
 		return {
 			status: 'success',
 			message: 'Пользователь успешно зарегистрирован',
 			player,
 			access_token: tokens.accessToken,
-			bitrix: bitrixData,
+			// bitrix: bitrixData,
 		}
 	}
 
@@ -105,7 +104,7 @@ export class AuthService {
 		}
 
 		const tokens = this.tokensService.generateTokens({
-			id: player.id,
+			_id: player.id,
 			login: player.login,
 			telephone: player.telephone,
 		})

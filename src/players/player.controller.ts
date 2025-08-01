@@ -3,7 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
 import { PlayerService } from './player.service'
 
-@ApiTags('Player')
+@ApiTags('Players')
 @Controller('api/v1')
 export class PlayerController {
 	constructor(private playerService: PlayerService) {}

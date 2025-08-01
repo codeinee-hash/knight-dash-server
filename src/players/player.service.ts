@@ -7,11 +7,11 @@ import { Player, PlayerDocument } from './player.schema'
 @Injectable()
 export class PlayerService {
 	constructor(
-		@InjectModel(Player.name) private palyerModel: Model<PlayerDocument>
+		@InjectModel(Player.name) private playerModel: Model<PlayerDocument>
 	) {}
 
 	async createPlayer(dto: CreatePlayerDto) {
-		const createdPlayer = new this.palyerModel(dto)
+		const createdPlayer = new this.playerModel(dto)
 		const player = await createdPlayer.save()
 
 		return {
@@ -21,7 +21,7 @@ export class PlayerService {
 	}
 
 	async getAllPlayers() {
-		const players = await this.palyerModel.find().exec()
+		const players = await this.playerModel.find().exec()
 
 		return {
 			status: 'success',
@@ -30,7 +30,7 @@ export class PlayerService {
 	}
 
 	async getPlayerByTel(telephone: string) {
-		const player = await this.palyerModel.findOne({ telephone }).lean()
+		const player = await this.playerModel.findOne({ telephone }).lean()
 
 		return player
 	}
@@ -41,7 +41,7 @@ export class PlayerService {
 		}
 
 		const scoreField = `score${mode}` as 'score15' | 'score30' | 'score60'
-		const player = await this.palyerModel.findById(id)
+		const player = await this.playerModel.findById(id)
 
 		if (!player) {
 			throw new Error('Игрок не найден')
@@ -52,7 +52,7 @@ export class PlayerService {
 			await player.save()
 		}
 
-		const topPlayers = await this.palyerModel
+		const topPlayers = await this.playerModel
 			.find()
 			.sort({ [scoreField]: -1 })
 			.limit(10)
@@ -67,7 +67,7 @@ export class PlayerService {
 	}
 
 	async getTopPlayers() {
-		const topPlayers = await this.palyerModel.find()
+		const topPlayers = await this.playerModel.find()
 
 		return topPlayers
 	}
