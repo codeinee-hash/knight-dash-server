@@ -54,8 +54,14 @@ export class SoloGameService {
 
 		return {
 			gameId: session._id,
+			timeMode: session.timeMode,
 			remainingTime: Math.max(0, remaining),
 			totalScore: session.totalScore,
+			coint150: session.score150,
+			coint200: session.score200,
+			coint250: session.score250,
+			coint300: session.score300,
+			coint350: session.score350,
 			finished: session.finished || remaining <= 0,
 		}
 	}
