@@ -6,7 +6,8 @@ import { Response } from 'express'
 export class TokensService {
 	constructor(private jwtService: JwtService) {}
 
-	generateTokens(payload: any) {
+	generateTokens(payload: { _id: string; login: string; telephone: string }) {
+		console.log('payload token generation: ', payload)
 		const accessToken = this.jwtService.sign(payload, {
 			expiresIn: '2d',
 		})
@@ -29,7 +30,9 @@ export class TokensService {
 
 	validateRefreshToken(token: string): any {
 		try {
-			return this.jwtService.verify(token)
+			const payload = this.jwtService.verify(token)
+			console.log('Validated refresh token payload:', payload) // Логируем payload
+			return payload
 		} catch (e) {
 			throw new UnauthorizedException('Invalid refresh token')
 		}

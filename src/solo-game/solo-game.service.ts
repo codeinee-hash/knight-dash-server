@@ -100,4 +100,28 @@ export class SoloGameService {
 
 		return await session.save()
 	}
+
+	async deleteGame(gameId: string, userId: string) {
+		if (!Types.ObjectId.isValid(gameId)) {
+			throw new BadRequestException('Неверный формат gameId')
+		}
+
+		const session = await this.soloGameModel.findById(
+			new Types.ObjectId(gameId)
+		)
+		if (!session) {
+			throw new NotFoundException('Игра не найдена')
+		}
+
+		if (session.playerId.toString() !== userId) {
+			throw new ForbiddenException('У вас нет прав на удаление этой игры')
+		}
+
+		await this.soloGameModel.deleteOne({ _id: new Types.ObjectId(gameId) })
+
+		return {
+			status: 'success',
+			message: 'Игра успешно удалена',
+		}
+	}
 }

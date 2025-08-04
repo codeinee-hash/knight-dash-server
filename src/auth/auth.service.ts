@@ -15,8 +15,9 @@ export class AuthService {
 
 	async login(playerDto: CreatePlayerDto, res: Response) {
 		const player = await this.validatePlayer(playerDto)
+		console.log('player from login service: ', player)
 		const tokens = this.tokensService.generateTokens({
-			_id: player.id,
+			_id: player?._id?.toString(),
 			login: player.login,
 			telephone: player.telephone,
 		})
@@ -25,7 +26,11 @@ export class AuthService {
 
 		return {
 			status: 'success',
-			player,
+			player: {
+				_id: player?._id?.toString(),
+				login: player.login,
+				telephone: player.telephone,
+			},
 			access_token: tokens.accessToken,
 		}
 	}
@@ -44,7 +49,7 @@ export class AuthService {
 		const player = await this.playerService.createPlayer(playerDto)
 
 		const tokens = this.tokensService.generateTokens({
-			_id: player.player.id,
+			_id: player.player?.id?.toString(),
 			login: player.player.login,
 			telephone: player.player.telephone,
 		})
@@ -71,7 +76,11 @@ export class AuthService {
 		return {
 			status: 'success',
 			message: 'Пользователь успешно зарегистрирован',
-			player,
+			player: {
+				_id: player?.player?._id?.toString(),
+				login: player.player.login,
+				telephone: player.player.telephone,
+			},
 			access_token: tokens.accessToken,
 			// bitrix: bitrixData,
 		}
@@ -104,7 +113,7 @@ export class AuthService {
 		}
 
 		const tokens = this.tokensService.generateTokens({
-			_id: player.id,
+			_id: player?.id?.toString(),
 			login: player.login,
 			telephone: player.telephone,
 		})

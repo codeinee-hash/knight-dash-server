@@ -1,6 +1,7 @@
 import {
 	Body,
 	Controller,
+	Delete,
 	Get,
 	Param,
 	Post,
@@ -50,5 +51,14 @@ export class SoloGameController {
 			score: body.score,
 			gameId,
 		})
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Delete(':gameId')
+	async deleteGame(
+		@Param('gameId') gameId: string,
+		@Req() req: RequestWithUser
+	) {
+		return this.gameService.deleteGame(gameId, req.user._id)
 	}
 }
