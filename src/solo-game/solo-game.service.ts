@@ -66,6 +66,19 @@ export class SoloGameService {
 		}
 	}
 
+	async getGameInfo(gameId: string) {
+		if (gameId.length !== 24) {
+			throw new NotFoundException('Игра с таким ID не найдена')
+		}
+
+		const session = await this.soloGameModel.findById(
+			new Types.ObjectId(gameId)
+		)
+		if (!session) throw new NotFoundException('Игра не найдена')
+
+		return session
+	}
+
 	async endGameSession(gameId: string) {
 		const game = await this.soloGameModel.findById(new Types.ObjectId(gameId))
 		if (!game) throw new NotFoundException('Игра не найдена')

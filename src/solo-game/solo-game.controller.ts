@@ -36,6 +36,12 @@ export class SoloGameController {
 	}
 
 	@UseGuards(JwtAuthGuard)
+	@Get(':gameId/info')
+	async getGameInfo(@Param('gameId') gameId: string) {
+		return this.gameService.getGameInfo(gameId)
+	}
+
+	@UseGuards(JwtAuthGuard)
 	@Post(':gameId/end')
 	async endGame(@Param('gameId') gameId: string) {
 		return this.gameService.endGameSession(gameId)
