@@ -1,6 +1,7 @@
 import { HttpService } from '@nestjs/axios'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { Request, Response } from 'express'
+import { firstValueFrom } from 'rxjs'
 import { CreatePlayerDto } from 'src/players/dto/player.dto'
 import { PlayerService } from 'src/players/player.service'
 import { TokensService } from './token.service'
@@ -15,7 +16,6 @@ export class AuthService {
 
 	async login(playerDto: CreatePlayerDto, res: Response) {
 		const player = await this.validatePlayer(playerDto)
-		console.log('player from login service: ', player)
 		const tokens = this.tokensService.generateTokens({
 			_id: player?._id?.toString(),
 			login: player.login,
@@ -36,53 +36,77 @@ export class AuthService {
 	}
 
 	async registration(playerDto: CreatePlayerDto, res: Response) {
-		const candidate = await this.playerService.getPlayerByTel(
+		const candidateByTel = await this.playerService.getPlayerByTel(
 			playerDto.telephone
 		)
-		if (candidate) {
+		if (candidateByTel) {
 			throw new HttpException(
 				'Номер телефона уже занят',
 				HttpStatus.BAD_REQUEST
 			)
 		}
 
+		const candidateByLogin = await this.playerService.getPlayerByLogin(
+			playerDto.login
+		)
+		if (candidateByLogin) {
+			throw new HttpException('Имя уже занят', HttpStatus.BAD_REQUEST)
+		}
+
 		const player = await this.playerService.createPlayer(playerDto)
 
 		const tokens = this.tokensService.generateTokens({
-			_id: player.player?.id?.toString(),
+			_id: String(player.player?._id),
 			login: player.player.login,
 			telephone: player.player.telephone,
 		})
 
 		this.tokensService.setRefreshTokenCookie(res, tokens.refreshToken)
 
-		// const bitrixRes$ = this.httpService.post(
-		// 	`${process.env.BITRIX_URL}`,
-		// 	new URLSearchParams({
-		// 		'fields[SOURCE_ID]': '127',
-		// 		'fields[NAME]': playerDto.login,
-		// 		'fields[TITLE]': 'GEEKS GAME: Хакатон 2025',
-		// 		'fields[PHONE][0][VALUE]': playerDto.telephone,
-		// 		'fields[PHONE][0][VALUE_TYPE]': 'WORK',
-		// 	}),
-		// 	{
-		// 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		// 	}
-		// )
+		try {
+			const bitrixRes$ = this.httpService.post(
+				`${process.env.BITRIX_URL}/rest/1/${process.env.BITRIX_API_KEY}/crm.lead.add.json`,
+				new URLSearchParams({
+					'fields[SOURCE_ID]': '127',
+					'fields[NAME]': playerDto.login,
+					'fields[TITLE]': 'GEEKS GAME: Хакатон 2025',
+					'fields[PHONE][0][VALUE]': playerDto.telephone,
+					'fields[PHONE][0][VALUE_TYPE]': 'WORK',
+				}),
+				{
+					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+					timeout: 10000,
+				}
+			)
 
-		// const bitrixResponse = await firstValueFrom(bitrixRes$)
-		// const bitrixData = bitrixResponse.data
+			const bitrixResponse = await firstValueFrom(bitrixRes$)
+			const bitrixData = bitrixResponse.data
 
-		return {
-			status: 'success',
-			message: 'Пользователь успешно зарегистрирован',
-			player: {
-				_id: player?.player?._id?.toString(),
-				login: player.player.login,
-				telephone: player.player.telephone,
-			},
-			access_token: tokens.accessToken,
-			// bitrix: bitrixData,
+			return {
+				status: 'success',
+				message: 'Пользователь успешно зарегистрирован',
+				player: {
+					_id: player?.player?._id?.toString(),
+					login: player.player.login,
+					telephone: player.player.telephone,
+				},
+				access_token: tokens.accessToken,
+				bitrix: bitrixData,
+			}
+		} catch (error) {
+			console.error('Bitrix API error:', error.response?.data || error.message)
+
+			return {
+				status: 'success',
+				message: 'Пользователь успешно зарегистрирован (Bitrix API error)',
+				player: {
+					_id: player?.player?._id?.toString(),
+					login: player.player.login,
+					telephone: player.player.telephone,
+				},
+				access_token: tokens.accessToken,
+				bitrix: null,
+			}
 		}
 	}
 
@@ -131,15 +155,18 @@ export class AuthService {
 
 		if (!player) {
 			throw new HttpException(
-				'Неверный имя или телефон',
+				'Неверный логин или телефон',
 				HttpStatus.BAD_REQUEST
 			)
 		}
 
-		if (player) {
-			return player
+		if (player.login !== playerDto.login) {
+			throw new HttpException(
+				'Неверный логин или телефон',
+				HttpStatus.BAD_REQUEST
+			)
 		}
 
-		throw new HttpException('Неверный имя или телефон', HttpStatus.BAD_REQUEST)
+		return player
 	}
 }

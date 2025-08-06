@@ -23,3 +23,63 @@ export class UpdateScoreDto {
 	@IsNumber()
 	readonly score: number
 }
+
+export class TopPlayerDto {
+	@ApiProperty({
+		example: '682a5b0c5498de8f2335788c',
+		description: 'Уникальный идентификатор игрока',
+	})
+	_id: string
+
+	@ApiProperty({
+		example: 'Grizzzly',
+		description: 'Логин игрока',
+	})
+	login: string
+
+	@ApiProperty({
+		example: '+996220001120',
+		description: 'Телефон игрока',
+	})
+	telephone: string
+
+	@ApiProperty({
+		example: 1000,
+		description: 'Максимальный счёт игрока в данном режиме',
+	})
+	totalScore: number
+
+	@ApiProperty({
+		example: 15,
+		description: 'Режим игры (15, 30 или 60 секунд)',
+	})
+	timeMode: number
+}
+
+export class TopPlayersByModeDto {
+	@ApiProperty({
+		example: 15,
+		description: 'Режим игры (15, 30 или 60 секунд)',
+	})
+	timeMode: number
+
+	@ApiProperty({
+		type: () => [TopPlayerDto],
+		description: 'Список топ-10 игроков для данного режима',
+	})
+	players: TopPlayerDto[]
+}
+
+export class GetTopPlayersSuccessResponseDto {
+	@ApiProperty({
+		example: 'success',
+		description: 'Статус ответа',
+	})
+	status: 'success'
+
+	@ApiProperty({
+		type: () => [TopPlayersByModeDto],
+		description: 'Список топов игроков по режимам',
+	})
+	data: TopPlayersByModeDto[]
+}

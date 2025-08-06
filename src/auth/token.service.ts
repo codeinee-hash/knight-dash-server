@@ -7,7 +7,6 @@ export class TokensService {
 	constructor(private jwtService: JwtService) {}
 
 	generateTokens(payload: { _id: string; login: string; telephone: string }) {
-		console.log('payload token generation: ', payload)
 		const accessToken = this.jwtService.sign(payload, {
 			expiresIn: '2d',
 		})
