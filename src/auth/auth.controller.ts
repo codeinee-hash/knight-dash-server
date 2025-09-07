@@ -25,6 +25,7 @@ export class AuthController {
 		@Body() playerDto: CreatePlayerDto,
 		@Res({ passthrough: true }) res: Response
 	) {
+		console.log('login data: ', playerDto)
 		return this.authService.login(playerDto, res)
 	}
 
@@ -36,6 +37,7 @@ export class AuthController {
 		@Body() playerDto: CreatePlayerDto,
 		@Res({ passthrough: true }) res: Response
 	) {
+		console.log('register data: ', playerDto)
 		return this.authService.registration(playerDto, res)
 	}
 
