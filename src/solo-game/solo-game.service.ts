@@ -105,6 +105,8 @@ export class SoloGameService {
 		const isFinished = elapsed >= session.timeMode
 
 		if (isFinished || session.finished) {
+			session.finished = true
+			await session.save()
 			throw new ForbiddenException('Игра уже закончена')
 		}
 

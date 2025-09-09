@@ -47,17 +47,17 @@ export class SoloGameController {
 		return this.gameService.endGameSession(gameId)
 	}
 
-	@UseGuards(JwtAuthGuard)
-	@Post(':gameId/submit-score')
-	async submitScore(
-		@Param('gameId') gameId: string,
-		@Body() body: { score: number }
-	) {
-		return this.gameService.submitScore({
-			score: body.score,
-			gameId,
-		})
-	}
+	// @UseGuards(JwtAuthGuard)
+	// @Post(':gameId/submit-score')
+	// async submitScore(
+	// 	@Param('gameId') gameId: string,
+	// 	@Body() body: { score: number }
+	// ) {
+	// 	return this.gameService.submitScore({
+	// 		score: body.score,
+	// 		gameId,
+	// 	})
+	// }
 
 	@UseGuards(JwtAuthGuard)
 	@Delete(':gameId')

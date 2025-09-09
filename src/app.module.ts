@@ -15,7 +15,7 @@ import { SoloGameModule } from './solo-game/solo-game.module'
 		MongooseModule.forRoot(process.env.DATABASE_URL || ''),
 		PlayerModule,
 		AuthModule,
-		SoloGameModule
+		SoloGameModule,
 	],
 })
 export class AppModule {}
