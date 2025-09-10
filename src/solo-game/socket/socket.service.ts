@@ -28,7 +28,7 @@ export class SoloGameSocketService implements OnGatewayConnection {
 		@MessageBody() { score, gameId }: { score: number; gameId: string },
 		@ConnectedSocket() client: any
 	) {
-		console.log('dto from socket server: ', { score, gameId })
+		// console.log('dto from socket server: ', { score, gameId })
 
 		try {
 			const updatedSession = await this.soloGameService.submitScore({ score, gameId })
