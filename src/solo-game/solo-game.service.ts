@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
-import { SoloGame, SoloGameDocument } from './solo-game.schema'
+import { SoloGame, SoloGameDocument } from './schemas/solo-game.schema'
 
 @Injectable()
 export class SoloGameService {

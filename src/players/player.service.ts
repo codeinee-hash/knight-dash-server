@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-import { SoloGame, SoloGameDocument } from 'src/solo-game/solo-game.schema'
+import {
+	SoloGame,
+	SoloGameDocument,
+} from 'src/solo-game/schemas/solo-game.schema'
 import { CreatePlayerDto } from './dto/player.dto'
-import { TopPlayer, TopPlayersByMode } from './interfaces/interfaces'
-import { Player, PlayerDocument } from './player.schema'
+import { TopPlayer, TopPlayersByMode } from './types/player.interface'
+import { Player, PlayerDocument } from './schemas/player.schema'
 
 @Injectable()
 export class PlayerService {
@@ -51,16 +54,13 @@ export class PlayerService {
 		for (const timeMode of timeModes) {
 			const topPlayers = await this.soloGameModel
 				.aggregate<TopPlayer>([
-					// Фильтруем по timeMode
 					{ $match: { timeMode } },
-					// Группируем по playerId, выбирая максимальный totalScore
 					{
 						$group: {
 							_id: '$playerId',
 							totalScore: { $max: '$totalScore' },
 						},
 					},
-					// Объединяем с коллекцией Player, чтобы получить login и telephone
 					{
 						$lookup: {
 							from: 'players',
@@ -69,13 +69,9 @@ export class PlayerService {
 							as: 'player',
 						},
 					},
-					// Разворачиваем массив player
 					{ $unwind: '$player' },
-					// Сортируем по totalScore по убыванию
 					{ $sort: { totalScore: -1 } },
-					// Ограничиваем топ-10
 					{ $limit: 10 },
-					// Формируем выходные данные
 					{
 						$project: {
 							_id: '$player._id',

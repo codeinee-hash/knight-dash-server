@@ -12,7 +12,7 @@ import { Request, Response } from 'express'
 import { ValidationPipe } from 'src/pipes/validation.pipe'
 import { CreatePlayerDto } from 'src/players/dto/player.dto'
 import { AuthService } from './auth.service'
-import { JwtAuthGuard } from './jwt-auth.guard'
+import { JwtAuthGuard } from './guards/jwt-auth.guard'
 
 @ApiTags('Auth')
 @Controller('api/v1')

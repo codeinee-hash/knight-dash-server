@@ -8,7 +8,7 @@ import {
 	WebSocketGateway,
 } from '@nestjs/websockets'
 import { Model } from 'mongoose'
-import { SoloGame, SoloGameDocument } from '../solo-game.schema'
+import { SoloGame, SoloGameDocument } from '../schemas/solo-game.schema'
 import { SoloGameService } from '../solo-game.service'
 
 @Injectable()
@@ -31,7 +31,10 @@ export class SoloGameSocketService implements OnGatewayConnection {
 		// console.log('dto from socket server: ', { score, gameId })
 
 		try {
-			const updatedSession = await this.soloGameService.submitScore({ score, gameId })
+			const updatedSession = await this.soloGameService.submitScore({
+				score,
+				gameId,
+			})
 			client.emit('server-submit-score-path', updatedSession)
 		} catch (error) {
 			client.emit('server-error', {

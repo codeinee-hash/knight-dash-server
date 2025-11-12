@@ -10,9 +10,9 @@ async function run() {
 
 	app.enableCors({
 		origin: [
-			'http://localhost:5173',
-			'https://knight-dash.vercel.app',
-			'http://192.168.88.10:5173',
+			process.env.CLIENT_PROD_URL,
+			process.env.CLIENT_STAGING_URL,
+			process.env.CLIENT_DEV_URL,
 		],
 		credentials: true,
 	})
@@ -21,21 +21,14 @@ async function run() {
 	app.useGlobalPipes(new ValidationPipe())
 
 	const config = new DocumentBuilder()
-		.setTitle('API Documentation Knihgt Dash')
-		.setDescription('REST API Documentation')
+		.setTitle('Knihgt Dash API')
 		.setVersion('1.0.2')
-		.addTag('@eldiyarchess')
 		.build()
 
 	const document = SwaggerModule.createDocument(app, config)
 	SwaggerModule.setup('/api/swagger-ui', app, document)
 
-	await app.listen(PORT, () => {
-		console.log(`Server started on port - ${PORT}`)
-		console.log(
-			`Swagger UI available at http://localhost:${PORT}/api/swagger-ui/`
-		)
-	})
+	await app.listen(PORT, () => console.log(`Server started on port - ${PORT}`))
 }
 
 run()

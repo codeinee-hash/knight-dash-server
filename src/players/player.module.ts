@@ -1,11 +1,13 @@
 import { forwardRef, Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
 import { AuthModule } from 'src/auth/auth.module'
-import { SoloGame, SoloGameSchema } from 'src/solo-game/solo-game.schema'
+import {
+	SoloGame,
+	SoloGameSchema,
+} from 'src/solo-game/schemas/solo-game.schema'
 import { PlayerController } from './player.controller'
-import { Player, PlayerSchema } from './player.schema'
 import { PlayerService } from './player.service'
-import { ScoreController } from './score.controller'
+import { Player, PlayerSchema } from './schemas/player.schema'
 
 @Module({
 	imports: [
@@ -15,7 +17,7 @@ import { ScoreController } from './score.controller'
 		]),
 		forwardRef(() => AuthModule),
 	],
-	controllers: [PlayerController, ScoreController],
+	controllers: [PlayerController],
 	providers: [PlayerService],
 	exports: [PlayerService],
 })

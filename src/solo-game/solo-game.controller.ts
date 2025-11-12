@@ -9,7 +9,7 @@ import {
 	UseGuards,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard'
 import { CreateSoloGameDto, RequestWithUser } from './dto/solo-game.dto'
 import { SoloGameService } from './solo-game.service'
 

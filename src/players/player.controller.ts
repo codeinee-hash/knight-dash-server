@@ -1,6 +1,6 @@
 import { Controller, Get, UseGuards } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard'
 import { GetTopPlayersSuccessResponseDto } from './dto/player.dto'
 import { PlayerService } from './player.service'
 
