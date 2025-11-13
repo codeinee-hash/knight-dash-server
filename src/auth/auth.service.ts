@@ -1,10 +1,10 @@
 import { HttpService } from '@nestjs/axios'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import * as bcrypt from 'bcryptjs'
 import { Request, Response } from 'express'
-import { firstValueFrom } from 'rxjs'
-import { CreatePlayerDto } from 'src/players/dto/player.dto'
+import { CreatePlayerDto, LoginPlayerDto } from 'src/players/dto/player.dto'
 import { PlayerService } from 'src/players/player.service'
-import { TokensService } from './token.service'
+import { TokensService, TokenType } from './token.service'
 
 @Injectable()
 export class AuthService {
@@ -14,38 +14,28 @@ export class AuthService {
 		private readonly httpService: HttpService
 	) {}
 
-	async login(playerDto: CreatePlayerDto, res: Response) {
+	async login(playerDto: LoginPlayerDto, res: Response) {
 		const player = await this.validatePlayer(playerDto)
-		const tokens = this.tokensService.generateTokens({
+		const { accessToken, refreshToken } = this.tokensService.generateTokens({
 			_id: player?._id?.toString(),
 			login: player.login,
-			telephone: player.telephone,
+			email: player.email,
 		})
 
-		this.tokensService.setRefreshTokenCookie(res, tokens.refreshToken)
+		this.tokensService.setRefreshTokenCookie(
+			res,
+			TokenType.REFRESH,
+			refreshToken
+		)
+		this.tokensService.setRefreshTokenCookie(res, TokenType.ACCESS, accessToken)
 
 		return {
 			status: 'success',
-			player: {
-				_id: player?._id?.toString(),
-				login: player.login,
-				telephone: player.telephone,
-			},
-			access_token: tokens.accessToken,
+			message: 'Успешный вход',
 		}
 	}
 
 	async registration(playerDto: CreatePlayerDto, res: Response) {
-		const candidateByTel = await this.playerService.getPlayerByTel(
-			playerDto.telephone
-		)
-		if (candidateByTel) {
-			throw new HttpException(
-				'Номер телефона уже занят',
-				HttpStatus.BAD_REQUEST
-			)
-		}
-
 		const candidateByLogin = await this.playerService.getPlayerByLogin(
 			playerDto.login
 		)
@@ -53,69 +43,67 @@ export class AuthService {
 			throw new HttpException('Имя уже занят', HttpStatus.BAD_REQUEST)
 		}
 
-		const player = await this.playerService.createPlayer(playerDto)
+		const candidateByEmail = await this.playerService.getPlayerByEmail(
+			playerDto.email
+		)
+		if (candidateByEmail) {
+			throw new HttpException('Email уже занят', HttpStatus.BAD_REQUEST)
+		}
 
-		const tokens = this.tokensService.generateTokens({
-			_id: String(player.player?._id),
-			login: player.player.login,
-			telephone: player.player.telephone,
+		const hashPassword = await bcrypt.hash(playerDto.password, 10)
+
+		const player = await this.playerService.createPlayer({
+			...playerDto,
+			password: hashPassword,
 		})
 
-		this.tokensService.setRefreshTokenCookie(res, tokens.refreshToken)
+		const { accessToken, refreshToken } = this.tokensService.generateTokens({
+			_id: String(player.player?._id),
+			login: player.player.login,
+			email: player.player.email,
+		})
+
+		this.tokensService.setRefreshTokenCookie(
+			res,
+			TokenType.REFRESH,
+			refreshToken
+		)
+		this.tokensService.setRefreshTokenCookie(res, TokenType.ACCESS, accessToken)
 
 		try {
-			const bitrixRes$ = this.httpService.post(
-				`${process.env.BITRIX_URL}/rest/1/${process.env.BITRIX_API_KEY}/crm.lead.add.json`,
-				new URLSearchParams({
-					'fields[SOURCE_ID]': '127',
-					'fields[NAME]': playerDto.login,
-					'fields[TITLE]': 'GEEKS GAME: Хакатон 2025',
-					'fields[PHONE][0][VALUE]': playerDto.telephone,
-					'fields[PHONE][0][VALUE_TYPE]': 'WORK',
-				}),
-				{
-					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-					timeout: 10000,
-				}
-			)
+			// const bitrixRes$ = this.httpService.post(
+			// 	`${process.env.BITRIX_URL}/rest/1/${process.env.BITRIX_API_KEY}/crm.lead.add.json`,
+			// 	new URLSearchParams({
+			// 		'fields[SOURCE_ID]': '127',
+			// 		'fields[NAME]': playerDto.login,
+			// 		'fields[TITLE]': 'GEEKS GAME: Хакатон 2025',
+			// 		'fields[PHONE][0][VALUE]': playerDto.telephone,
+			// 		'fields[PHONE][0][VALUE_TYPE]': 'WORK',
+			// 	}),
+			// 	{
+			// 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+			// 		timeout: 10000,
+			// 	}
+			// )
 
-			const bitrixResponse = await firstValueFrom(bitrixRes$)
-			const bitrixData = bitrixResponse.data
+			// const bitrixResponse = await firstValueFrom(bitrixRes$)
+			// const bitrixData = bitrixResponse.data
 
 			return {
 				status: 'success',
 				message: 'Пользователь успешно зарегистрирован',
-				player: {
-					_id: player?.player?._id?.toString(),
-					login: player.player.login,
-					telephone: player.player.telephone,
-				},
-				access_token: tokens.accessToken,
-				bitrix: bitrixData,
+				// bitrixData,
 			}
 		} catch (error) {
-			console.error('Bitrix API error:', error.response?.data || error.message)
-
 			return {
 				status: 'success',
 				message: 'Пользователь успешно зарегистрирован (Bitrix API error)',
-				player: {
-					_id: player?.player?._id?.toString(),
-					login: player.player.login,
-					telephone: player.player.telephone,
-				},
-				access_token: tokens.accessToken,
-				bitrix: null,
 			}
 		}
 	}
 
 	async logout(res: Response) {
-		res.clearCookie('refresh_token', {
-			httpOnly: true,
-			secure: true,
-			sameSite: 'strict',
-		})
+		this.tokensService.removeTokens(res)
 
 		return {
 			status: 'success',
@@ -124,47 +112,56 @@ export class AuthService {
 	}
 
 	async refreshToken(req: Request, res: Response) {
-		const refreshToken = req.cookies?.refresh_token
-		if (!refreshToken) {
+		const refreshTokenCookie = req.cookies?.refresh_token
+		if (!refreshTokenCookie) {
 			throw new HttpException('Нет токена', HttpStatus.UNAUTHORIZED)
 		}
 
-		const payload = this.tokensService.validateRefreshToken(refreshToken)
-		const player = await this.playerService.getPlayerByTel(payload.telephone)
+		const payload = this.tokensService.validateRefreshToken(refreshTokenCookie)
+		const player = await this.playerService.getPlayerByEmail(payload.email)
 
 		if (!player) {
 			throw new HttpException('Игрок не найден', HttpStatus.UNAUTHORIZED)
 		}
 
-		const tokens = this.tokensService.generateTokens({
+		const { accessToken, refreshToken } = this.tokensService.generateTokens({
 			_id: player?.id?.toString(),
 			login: player.login,
-			telephone: player.telephone,
+			email: player.email,
 		})
 
-		this.tokensService.setRefreshTokenCookie(res, tokens.refreshToken)
+		this.tokensService.setRefreshTokenCookie(
+			res,
+			TokenType.REFRESH,
+			refreshToken
+		)
+		this.tokensService.setRefreshTokenCookie(res, TokenType.ACCESS, accessToken)
 
 		return {
 			status: 'success',
-			access_token: tokens.accessToken,
+			message: 'Токен обновлен',
 		}
 	}
 
-	private async validatePlayer(playerDto: CreatePlayerDto) {
-		const player = await this.playerService.getPlayerByTel(playerDto.telephone)
+	private async validatePlayer(playerDto: LoginPlayerDto) {
+		const player = await this.playerService.getPlayerByLoginOrEmail(
+			playerDto.loginOrEmail
+		)
 
 		if (!player) {
 			throw new HttpException(
-				'Неверный логин или телефон',
+				'Неверный логин или email',
 				HttpStatus.BAD_REQUEST
 			)
 		}
 
-		if (player.login !== playerDto.login) {
-			throw new HttpException(
-				'Неверный логин или телефон',
-				HttpStatus.BAD_REQUEST
-			)
+		const passwordEquals = await bcrypt.compare(
+			playerDto.password,
+			player.password
+		)
+
+		if (!passwordEquals) {
+			throw new HttpException('Неверный пароль', HttpStatus.BAD_REQUEST)
 		}
 
 		return player

@@ -9,5 +9,5 @@ export class CreateSoloGameDto {
 }
 
 export interface RequestWithUser extends Request {
-	user: { login: string; telephone: string, _id: string }
+	user: { login: string; email: string; _id: string }
 }

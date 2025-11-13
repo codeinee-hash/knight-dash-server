@@ -10,9 +10,13 @@ export class Player {
 	@Prop({ required: true, unique: true })
 	declare login: string
 
-	@ApiProperty({ example: '+996500101112', description: 'Phone number' })
+	@ApiProperty({ example: 'example@mail.ru', description: 'Email' })
 	@Prop({ required: true, unique: true, type: String })
-	declare telephone: string
+	declare email: string
+
+	@ApiProperty({ example: '******', description: 'Password' })
+	@Prop({ required: true, type: String })
+	declare password: string
 
 	@ApiProperty({ example: 1200, description: 'Scores for 15s' })
 	@Prop({ type: Number })

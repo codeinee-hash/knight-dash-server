@@ -15,6 +15,7 @@ async function run() {
 			process.env.CLIENT_DEV_URL,
 		],
 		credentials: true,
+		exportHeaders: 'set-cookie',
 	})
 
 	app.use(cookieParser())
