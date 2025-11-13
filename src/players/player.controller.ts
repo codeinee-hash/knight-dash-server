@@ -18,7 +18,6 @@ export class PlayerController {
 	}
 
 	@ApiOperation({ summary: 'Get top players' })
-	@UseGuards(JwtAuthGuard)
 	@ApiResponse({
 		status: 200,
 		description: 'Топ игроков успешно получен',

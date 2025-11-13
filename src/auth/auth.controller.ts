@@ -10,7 +10,7 @@ import {
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { Request, Response } from 'express'
 import { ValidationPipe } from 'src/pipes/validation.pipe'
-import { CreatePlayerDto } from 'src/players/dto/player.dto'
+import { CreatePlayerDto, LoginPlayerDto } from 'src/players/dto/player.dto'
 import { AuthService } from './auth.service'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 
@@ -22,7 +22,7 @@ export class AuthController {
 	@ApiOperation({ summary: 'Login' })
 	@Post('/auth/sign-in')
 	async login(
-		@Body() playerDto: CreatePlayerDto,
+		@Body() playerDto: LoginPlayerDto,
 		@Res({ passthrough: true }) res: Response
 	) {
 		return this.authService.login(playerDto, res)

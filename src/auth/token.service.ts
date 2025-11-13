@@ -1,12 +1,17 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
-import { Response } from 'express'
+import { CookieOptions, Response } from 'express'
+
+export enum TokenType {
+	ACCESS = 'access_token',
+	REFRESH = 'refresh_token',
+}
 
 @Injectable()
 export class TokensService {
 	constructor(private jwtService: JwtService) {}
 
-	generateTokens(payload: { _id: string; login: string; telephone: string }) {
+	generateTokens(payload: { _id: string; login: string; email: string }) {
 		const accessToken = this.jwtService.sign(payload, {
 			expiresIn: '2d',
 		})
@@ -18,22 +23,33 @@ export class TokensService {
 		return { accessToken, refreshToken }
 	}
 
-	setRefreshTokenCookie(res: Response, token: string) {
-		res.cookie('refresh_token', token, {
+	setRefreshTokenCookie(res: Response, tokenType: TokenType, token: string) {
+		const day = tokenType === TokenType.ACCESS ? 2 : 7
+		res.cookie(tokenType, token, {
 			httpOnly: true,
-			secure: false,
+			secure: true,
 			sameSite: 'lax',
-			maxAge: 7 * 24 * 60 * 60 * 1000,
+			maxAge: day * 24 * 60 * 60 * 1000,
 		})
 	}
 
 	validateRefreshToken(token: string): any {
 		try {
 			const payload = this.jwtService.verify(token)
-			console.log('Validated refresh token payload:', payload) // Логируем payload
 			return payload
 		} catch (e) {
-			throw new UnauthorizedException('Invalid refresh token')
+			throw new UnauthorizedException('Invalid token')
 		}
+	}
+
+	removeTokens(res: Response) {
+		const cookieOptions: CookieOptions = {
+			httpOnly: true,
+			secure: true,
+			sameSite: 'strict',
+		}
+
+		res.clearCookie(TokenType.REFRESH, cookieOptions)
+		res.clearCookie(TokenType.ACCESS, cookieOptions)
 	}
 }

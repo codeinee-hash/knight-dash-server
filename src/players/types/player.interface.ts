@@ -1,7 +1,6 @@
 export interface TopPlayer {
 	_id: string
 	login: string
-	telephone: string
 	totalScore: number
 	timeMode: number
 }

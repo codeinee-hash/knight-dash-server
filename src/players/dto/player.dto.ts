@@ -1,17 +1,40 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsMongoId, IsNumber, IsString, Length } from 'class-validator'
+import {
+	IsEmail,
+	IsMongoId,
+	IsNumber,
+	IsString,
+	Length,
+	MinLength,
+} from 'class-validator'
 
 export class CreatePlayerDto {
 	@ApiProperty({ example: 'RenamedUser', description: 'Nick name' })
 	@IsString({ message: 'Должно быть строкой' })
 	readonly login: string
 
-	@ApiProperty({ example: '+996500101112', description: 'Phone number' })
+	@ApiProperty({ example: 'example@mail.ru', description: 'Email' })
+	@IsEmail({}, { message: 'Некорректный email' })
+	readonly email: string
+
+	@ApiProperty({ example: '******', description: 'Password' })
 	@IsString({ message: 'Должно быть строкой' })
-	@Length(13, 13, {
-		message: 'Не меньше и не больше 13 символов (+996XXXXXXXXX)',
+	@MinLength(6, { message: 'Минимальная длина пароля 6 символов' })
+	readonly password: string
+}
+
+export class LoginPlayerDto {
+	@ApiProperty({
+		example: 'RenamedUser | example@mail.ru',
+		description: 'Login or Email',
 	})
-	readonly telephone: string
+	@IsString({ message: 'Должно быть строкой' })
+	readonly loginOrEmail: string
+
+	@ApiProperty({ example: '******', description: 'Password' })
+	@IsString({ message: 'Должно быть строкой' })
+	@MinLength(6, { message: 'Минимальная длина пароля 6 символов' })
+	readonly password: string
 }
 
 export class UpdateScoreDto {
@@ -41,7 +64,6 @@ export class TopPlayerDto {
 		example: '+996220001120',
 		description: 'Телефон игрока',
 	})
-	telephone: string
 
 	@ApiProperty({
 		example: 1000,

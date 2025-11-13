@@ -6,8 +6,8 @@ import {
 	SoloGameDocument,
 } from 'src/solo-game/schemas/solo-game.schema'
 import { CreatePlayerDto } from './dto/player.dto'
-import { TopPlayer, TopPlayersByMode } from './types/player.interface'
 import { Player, PlayerDocument } from './schemas/player.schema'
+import { TopPlayer, TopPlayersByMode } from './types/player.interface'
 
 @Injectable()
 export class PlayerService {
@@ -35,14 +35,22 @@ export class PlayerService {
 		}
 	}
 
-	async getPlayerByTel(telephone: string) {
-		const player = await this.playerModel.findOne({ telephone }).lean()
+	async getPlayerByEmail(email: string) {
+		const player = await this.playerModel.findOne({ email }).lean()
 
 		return player
 	}
 
 	async getPlayerByLogin(login: string) {
 		const player = await this.playerModel.findOne({ login }).lean()
+
+		return player
+	}
+
+	async getPlayerByLoginOrEmail(loginOrEmail: string) {
+		const player = await this.playerModel
+			.findOne({ $or: [{ login: loginOrEmail }, { email: loginOrEmail }] })
+			.lean()
 
 		return player
 	}
@@ -76,7 +84,6 @@ export class PlayerService {
 						$project: {
 							_id: '$player._id',
 							login: '$player.login',
-							telephone: '$player.telephone',
 							totalScore: 1,
 							timeMode: { $literal: timeMode },
 						},
