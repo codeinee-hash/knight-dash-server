@@ -26,7 +26,7 @@ export class TokensService {
 	setRefreshTokenCookie(res: Response, tokenType: TokenType, token: string) {
 		const day = tokenType === TokenType.ACCESS ? 2 : 7
 		res.cookie(tokenType, token, {
-			httpOnly: true,
+			httpOnly: tokenType === TokenType.REFRESH,
 			secure: true,
 			sameSite: 'lax',
 			maxAge: day * 24 * 60 * 60 * 1000,
