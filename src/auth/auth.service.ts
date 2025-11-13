@@ -40,7 +40,7 @@ export class AuthService {
 			playerDto.login
 		)
 		if (candidateByLogin) {
-			throw new HttpException('Имя уже занят', HttpStatus.BAD_REQUEST)
+			throw new HttpException('Логин уже занят', HttpStatus.BAD_REQUEST)
 		}
 
 		const candidateByEmail = await this.playerService.getPlayerByEmail(
